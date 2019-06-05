@@ -1,4 +1,4 @@
-export const createProject = (project) => {
+export const createProject = (project, thisOfComponent) => {
   return (dispatch, getState, { getFirebase, getFirestore }) => {
     // make async call to database
     const firestore = getFirestore();
@@ -10,7 +10,18 @@ export const createProject = (project) => {
       authorLastName: profile.lastName,
       autorId: authorId,
       createdAt: new Date()
-    }).then(() => {
+    })
+      .then((docRef) => {
+        thisOfComponent.setState({
+          id: docRef.id
+        })
+        firestore.collection('projects').doc(docRef.id).set({
+          id: docRef.id
+        }, { merge: true }).then((docRef) => {
+          thisOfComponent.props.history.push('/toolTypeDashboard/' + thisOfComponent.state.systemId);
+        })
+      })
+      .then(() => {
       dispatch({ type: 'CREATE_PROJECT', project });
     }).catch((err) => {
       dispatch({ type: 'CREATE_PROJECT_ERROR', err });

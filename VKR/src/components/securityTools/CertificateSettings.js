@@ -2,14 +2,14 @@ import React, { Component } from 'react'
 
 class CertificateSettings extends Component {
   state = {
-    certificateMinValue: 0,
-    certificateMaxValue: 1,
-    certificateComment:''
+    certificateMinValue: this.props.projectState.currentCertificate.minValue,
+    certificateMaxValue: this.props.projectState.currentCertificate.maxValue,
+    certificateComment:  this.props.projectState.currentCertificate.description
   }
   
   onChange = (e) => {
     this.setState({
-      [e.target.id]: e.target.value
+      [e.target.id]: e.target.value.replace(",", ".")
     })
   }
 
@@ -22,12 +22,15 @@ class CertificateSettings extends Component {
   
     const projectState = this.props.projectState
     const currentCertificate = projectState.currentCertificate
-
+    let descRowCountPercents = 1
+    if (this.state.certificateComment) {
+      descRowCountPercents = Number(2 * this.state.certificateComment.lineCount()) + 'em'
+    } 
     return (
       <div className=' popup container section project-ditails'>
         <div className='card z-deph-1'>
           <div className='card-content'>
-            <span className='card-title'>Настройки сертификата {currentCertificate.certificateTitle} в СЗИ {projectState.title}</span>
+            <span className='card-title'>Настройки сертификата ({currentCertificate.certificateTitle}) в СЗИ {projectState.title}</span>
             <p>{projectState.content}</p>
           </div>
 
@@ -39,7 +42,7 @@ class CertificateSettings extends Component {
 
                 </div>
                 <div className='col s6'>
-                  <textarea id={'certificateMinValue'} onChange={this.onChange} className='materialize-textarea ' value={this.state.certificateMinValue} ></textarea>
+                  <textarea id={'certificateMinValue'} onChange={this.onChange} className='materialize-textarea active' value={this.state.certificateMinValue} ></textarea>
                 </div>
               </div>
 
@@ -50,7 +53,7 @@ class CertificateSettings extends Component {
                 </div>
 
                 <div className='col s6'>
-                  <textarea id={'certificateMaxValue'} onChange={this.onChange} className='materialize-textarea ' value={this.state.certificateMaxValue} ></textarea>
+                  <textarea id={'certificateMaxValue'} onChange={this.onChange} className='materialize-textarea active' value={this.state.certificateMaxValue} ></textarea>
                 </div>
 
               </div>
@@ -60,8 +63,13 @@ class CertificateSettings extends Component {
             <div className='card-content'>
               <div className='input-field'>
 
-                <label htmlFor={'certificateComment'}>Комментарий</label>
-                <textarea id={'certificateComment'} onChange={this.onChange} className='materialize-textarea ' value={this.state.certificateComment} ></textarea>
+                <label className='active' htmlFor={'certificateComment'}>Комментарий</label>
+                <textarea style={{
+                  height: descRowCountPercents,
+                  maxHeight: '230px',
+                  overflowY: 'auto'
+                }}
+                  id={'certificateComment'} onChange={this.onChange} className='materialize-textarea active' value={this.state.certificateComment} ></textarea>
 
               </div>
             </div>

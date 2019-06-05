@@ -10,7 +10,7 @@ export class AddToolInputField extends Component {
   handleValueChange = (e) => {
 
     this.setState({
-      itemValue: e.target.value
+      itemValue: e.target.value.replace(",", ".")
       
     })
   }
@@ -18,7 +18,8 @@ export class AddToolInputField extends Component {
   getDataFromDrop = (data) => {
     this.setState({
       itemTitle: data.itemTitle,
-      itemDescription: data.itemDescription
+      itemDescription: data.itemDescription,
+      typeOfItemId: data.typeOfItemId
     })
   }
 
@@ -29,7 +30,10 @@ export class AddToolInputField extends Component {
       toolId: this.props.toolId
     }
     this.props.createItem(dataToSave, this.props.itemType)
+    console.log(this.state.typeOfItemId)
+    this.props.deleteItemFromState(this.state.typeOfItemId, this.props.itemType)
     this.props.closePopup()
+    
   }
 
   render() {
@@ -53,6 +57,9 @@ export class AddToolInputField extends Component {
             </div>
 
           </div>
+
+          
+              
         </div>
       </div>
     )

@@ -20,7 +20,7 @@ export class ItemOfAddingTool extends Component {
           {item.itemValue}
         </div>
         <div className="card-content col s1 m1">
-          <a className="btn-floating btn-small waves-effect waves-light green"
+          <a className="btn-floating btn-small waves-effect waves-light red"
             onClick={this.deleteAction}><i className="material-icons">delete</i></a>
         </div>
       </li>

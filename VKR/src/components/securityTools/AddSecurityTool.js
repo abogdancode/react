@@ -5,7 +5,7 @@ import { firestoreConnect } from 'react-redux-firebase'
 import { compose } from 'redux'
 import { Redirect } from 'react-router-dom'
 import { deleteProject } from '../../store/actions/projectActions'
-import { updateItem, createItem, deleteItem, createTool, updateTool } from '../../store/actions/itemActions'
+import { updateItem, createItem, deleteItem, createTool, updateTool, setProperty } from '../../store/actions/itemActions'
 import { ToolCriterionList } from './ToolCriterionList'
 import { AddToolInputField } from './AddToolInputField'
 import { ToggleButtonTool } from './ToggleButtonTool'
@@ -20,23 +20,99 @@ class AddSecurityTool extends Component {
     showPopupCertificates: false,
     showPopupList: false,
     stateUpdated: false,
+    criterionList: [],
+    certificateList:[],
     buttonType: 'SAVE'
   }
 
-  componentDidMount() {
-    const currentTool = this.props.currentTool
-    if (!this.stateUpdated && currentTool) {
-      this.updateState(currentTool)
+  shouldComponentUpdate() {
+    
+    return true;
+  }
+  componentDidUpdate() {
+    
+
+
+      
+      
+      if (this.props.project) {
+        const currentTypesOfCriterion = this.props.project.criterions
+        const currentTypesOfCertificate = this.props.project.certificates
+        console.log(this.props.project)
+        
+
+          
+
+          if ((this.state.stateUpdated === false) && (this.props.currentTool || currentTypesOfCriterion || currentTypesOfCertificate)) {
+            const currentTool = this.props.currentTool
+
+          if (currentTool) {
+            console.log(currentTool)
+            this.setState({
+              ...currentTool,
+              criterionList: currentTool.criterionList,
+              certificateList: currentTool.certificateList,
+              stateUpdated: true,
+              showPopupList: true,
+              buttonType: 'CHANGE'
+            })
+          } else {
+            if (currentTypesOfCriterion || currentTypesOfCertificate) {
+              console.log('aaa')
+              this.setState({
+                criterionList: currentTypesOfCriterion,
+                certificateList: currentTypesOfCertificate,
+                stateUpdated: true
+              })
+            }
+        }
+      }
     }
   }
-  updateState = (currentTool) => {
-    this.setState({
-      ...currentTool,
-      stateUpdated: true,
-      showPopupList: true,
-      buttonType: 'CHANGE'
-    })
+
+  componentDidMount() {
+    
+
+
+
+    // if (this.props.currentTool) {
+      
+    
+    //   const currentTool = this.props.currentTool
+    //   console.log(currentTool)
+    //   if (this.props.project) {
+    //     const currentTypesOfCriterion = this.props.project.criterions
+    //     const currentTypesOfCertificate = this.props.project.certificates
+
+
+    //     if ((this.state.stateUpdated === false) && (currentTool || currentTypesOfCriterion || currentTypesOfCertificate)) {
+
+
+    //       if (currentTool) {
+          
+    //         this.setState({
+    //           ...currentTool,
+    //           criterionList: currentTool.criterionList,
+    //           certificateList: currentTool.certificateList,
+    //           stateUpdated: true,
+    //           showPopupList: true,
+    //           buttonType: 'CHANGE'
+    //         })
+    //       } else {
+    //         if (currentTypesOfCriterion || currentTypesOfCertificate) {
+
+    //           this.setState({
+    //             criterionList: currentTypesOfCriterion,
+    //             certificateList: currentTypesOfCertificate,
+    //             stateUpdated: true
+    //           })
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
   }
+
 
   
 
@@ -68,15 +144,50 @@ class AddSecurityTool extends Component {
   }
 
   deleteItem = (item, itemType) => {
+
+    this.returnItemToState(item, itemType)
     this.props.deleteItem(item, item.itselfKey, itemType)
+  }
+
+  returnItemToState = (item, itemType) => {
+    const itemTypeWithoutS = itemType.slice(0, -1)
+    const propsItems = this.props.project[itemType]
+    const currentItemIndex = this.getIndexOfItem(this.props.project[itemType], itemTypeWithoutS, item.typeOfItemId)
+    
+    let items = this.state[itemTypeWithoutS + 'List']
+    items.push(propsItems[currentItemIndex])
+    this.setState({
+      [itemTypeWithoutS + 'List']: items
+    })
+  }
+
+  deleteItemFromState = (itemId, itemType) => {
+    const itemTypeWithoutS = itemType.slice(0, -1)
+    const currentItemIndex = this.getIndexOfItem(this.state[itemTypeWithoutS + 'List'], itemTypeWithoutS, itemId)
+    let newItems = []
+    newItems = newItems.concat(this.state[itemTypeWithoutS + 'List'])
+    newItems.splice(currentItemIndex, 1);
+
+    this.setState({
+      [itemTypeWithoutS + 'List']: [...newItems]
+    })
+    this.changeItemOfTool(newItems, (itemTypeWithoutS + 'List'))
+  }
+
+  getIndexOfItem = (items, itemType, currentId) => {
+    for (let i = 0; i < items.length; i++) {
+      if (items[i][itemType + 'Id'] == currentId)
+        return i
+    }
   }
 
   saveTool = () => {
     this.setState({
-      showPopupList: true,
-      buttonType:'CLOSE'
+      // showPopupList: true,
+      // buttonType:'CLOSE'
     })
     const dataToSave = this.state
+    console.log(dataToSave)
     delete dataToSave.showPopupCriterions
     delete dataToSave.showPopupCertificates
     delete dataToSave.showPopupList
@@ -88,7 +199,7 @@ class AddSecurityTool extends Component {
 
   doneAction = (e) => {
     e.preventDefault()
-    this.props.history.push('/type/'+this.state.toolTypeId);
+    this.props.history.push('/toolType/' +this.props.match.params.toolTypeId+'/'+this.state.toolTypeId);
   }
 
   changeTool = () => {
@@ -100,13 +211,38 @@ class AddSecurityTool extends Component {
     delete dataToSave.stateUpdated
     delete dataToSave.buttonType
     const itemType = 'securityTools'
-    this.props.history.push('/type/' + this.state.toolTypeId);
+    this.props.history.push('/toolType/' + this.props.match.params.toolTypeId + '/' + this.state.toolTypeId);
     this.props.updateTool(dataToSave, itemType, this.state.toolId)
     
+  }
+
+  changeItemOfTool = (items,propertyName) => {
+    
+    this.setState({
+      showPopupList: true,
+      buttonType: 'CLOSE'
+    })
+  
+    const dataToSave = this.state
+    delete dataToSave.showPopupCriterions
+    delete dataToSave.showPopupCertificates
+    delete dataToSave.showPopupList
+    delete dataToSave.stateUpdated
+    delete dataToSave.buttonType
+    const itemType = 'securityTools'
+    this.props.setProperty(dataToSave,items, itemType, propertyName, this.state.toolId)
+    // this.props.history.push('/AddSecurityTool/' + this.props.match.params.toolTypeId + '/' + this.state.toolId  + '/');
   }
   
 
   render() {
+
+    
+
+
+
+
+
     const projectType = this.props.project
     const criterionsOfCurrentType = this.props.criterions
     const certificatesOfCurrentType = this.props.certificates
@@ -123,9 +259,9 @@ class AddSecurityTool extends Component {
         certificatesOfCurrentTool.push(certificate)
         }
       })
-
     if (projectType) {
       return (
+
         <div className='container section project-ditails'>
           <div className='card z-deph-0'>
             <div className='card-content'>
@@ -147,43 +283,52 @@ class AddSecurityTool extends Component {
                   buttonType={this.state.buttonType}
                   saveToolAction={this.saveTool}
                   changeToolAction={this.changeTool}
-                  doneAction={this.doneAction} ></ToggleButtonTool>
+                  doneAction={this.changeTool} ></ToggleButtonTool>
               </div>
               {
                 this.state.showPopupList && 
                   <div className='card z-deph-0'>
                 <div className='card-action lighten-4'>
-                    <ToolCriterionList titleLeft={'Критерии'} titleRight={'численное знчение'} itemList={criterionsOfCurrentTool} itemType={'criterions'} deleteAction={this.deleteItem} ></ToolCriterionList>
+                    <ToolCriterionList titleLeft={'Критерии'} titleRight={'численное значение'} itemList={criterionsOfCurrentTool} itemType={'criterions'} deleteAction={this.deleteItem} ></ToolCriterionList>
 
                   {
                     this.state.showPopupCriterions && <AddToolInputField
                       itemType={'criterions'}
                       closePopup={this.closePopup}
-                      items={this.props.project.criterions}
+                        items={this.state.criterionList}
                       toolTypeId={this.props.match.params.toolTypeId}
                       toolId={this.state.toolId}
-                      createItem={this.props.createItem}
+                        createItem={this.props.createItem}
+                        deleteItemFromState={this.deleteItemFromState}
+                        changeItemOfTool={this.changeItemOfTool}
                     />
 
                   }
-                  <a className="btn-floating btn-small waves-effect waves-light green" onClick={this.addCriterion}><i className="material-icons">add</i></a>
+                    {!!this.state.criterionList.length &&
+                      <a className="btn-floating btn-small waves-effect waves-light green" onClick={this.addCriterion}><i className="material-icons">add</i></a>
+                  }
+                  
                 </div>
 
                 <div className='card-action lighten-4'>
-                    <ToolCriterionList titleLeft={'Сертификат'} titleRight={'численное знчение'} itemList={certificatesOfCurrentTool} itemType={'certificates'} deleteAction={this.deleteItem} ></ToolCriterionList>
+                    <ToolCriterionList titleLeft={'Сертификат'} titleRight={'численное значение'} itemList={certificatesOfCurrentTool} itemType={'certificates'} deleteAction={this.deleteItem} ></ToolCriterionList>
 
                   {
                     this.state.showPopupCertificates && <AddToolInputField
-                      itemType={'certificates'}
-                      closePopup={this.closePopup}
-                      items={this.props.project.certificates}
-                      toolId={this.state.toolId}
-                      toolTypeId={this.props.match.params.toolTypeId}
-                      createItem={this.props.createItem}
+                        itemType={'certificates'}
+                        closePopup={this.closePopup}
+                        items={this.state.certificateList}
+                        toolId={this.state.toolId}
+                        toolTypeId={this.props.match.params.toolTypeId}
+                        createItem={this.props.createItem}
+                        deleteItemFromState={this.deleteItemFromState}
+                        changeItemOfTool={this.changeItemOfTool}
                     />
 
-                  }
-                  <a className="btn-floating btn-small waves-effect waves-light green" onClick={this.addCertificate}><i className="material-icons">add</i></a>
+                    }
+                    {!!this.state.certificateList.length &&
+                      <a className="btn-floating btn-small waves-effect waves-light green" onClick={this.addCertificate}><i className="material-icons">add</i></a>
+                    }
                 </div>
               </div>
                 
@@ -220,9 +365,11 @@ const mapStateToProps = (state, ownProps) => {
   const toolTypeId = ownProps.match.params.toolTypeId
   const toolId = ownProps.match.params.toolId
   const data = state.firestore.data
+  if (state.firestore.data.projects) {
+  }
+
   const projects = data.projects
   const project = projects ? projects[toolTypeId] : null;
-
   const allCriterions = data.criterions
   let filteredCriterions = []
 
@@ -254,8 +401,10 @@ const mapStateToProps = (state, ownProps) => {
   const allSecurityTools = data.securityTools
   if (toolId && !isEmpty(allSecurityTools)) {
     for (let toolKey in allSecurityTools) {
-      if (allSecurityTools[toolKey].toolId == toolId)
-        currentTool = allSecurityTools[toolKey]
+      if (allSecurityTools[toolKey]) {
+        if (allSecurityTools[toolKey].toolId == toolId)
+          currentTool = allSecurityTools[toolKey]
+        }
       }
     }
   return {
@@ -275,7 +424,8 @@ const mapDispatchToProps = (dispatch) => {
     updateTool: (tool, itemType, itemId) =>
       dispatch(updateTool(tool, itemType, itemId)),
     updateItem: (tool) => dispatch(updateItem(tool)),
-    deleteItem: (tool, itemKey, itemType) => dispatch(deleteItem(tool, itemKey, itemType))
+    deleteItem: (tool, itemKey, itemType) => dispatch(deleteItem(tool, itemKey, itemType)),
+    setProperty: (item, items, itemType, propertyName, itemId) => dispatch(setProperty(item, items, itemType, propertyName, itemId))
   }
 }
 
@@ -286,9 +436,40 @@ export default compose(
     { collection: 'projects', orderBy: ['createdAt', 'desc'] },
     { collection: 'criterions', orderBy: [] },
     { collection: 'certificates', orderBy: [] },
-    // { collection: 'securityTools', orderBy: ['createdAt', 'desc']}
+    //{ collection: 'securityTools', orderBy: ['createdAt', 'desc']}
   ])
 )(AddSecurityTool)
 
 
 
+// service cloud.firestore {
+//   match / databases / { database } / documents {
+//     match / projects / { project } {
+//       allow read, write: if request.auth.uid != null
+//     }
+//     match / criterions / { criterion } {
+//       allow read, write: if request.auth.uid != null
+//     }
+//     match / certificates / { certificate } {
+//       allow read, write: if request.auth.uid != null
+//     }
+//     match / securityTools / { securityTool } {
+//       allow read, write: if request.auth.uid != null
+//     }
+//     match / securitySystems / { securitySystem } {
+//       allow read, write: if request.auth.uid != null
+//     }
+//     match / counterId / { counterId } {
+//       allow read, write: if request.auth.uid != null
+//     }
+//     match / users / { userId } {
+//       allow create
+//       allow read: if request.auth.uid != null
+//     	allow write: if request.auth.uid == userId
+//     }
+//     match / notifications / { notification } {
+//       allow read: if request.auth.uid != null
+
+//     }
+//   }
+// }

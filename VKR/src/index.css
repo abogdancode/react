@@ -61,3 +61,35 @@ code {
 .display-block{
   display: block;
 }
+
+.translatedHor{
+  display: inline-block;
+  margin-top: 10px;
+    margin-left: 50% !important;
+    transform: translate(-50%,0);
+}
+.card .card-content{
+  padding: 2px !important;
+}
+.card .card-action {
+  padding: 5px 24px;
+}
+.row {
+    margin-bottom: 10px;
+}
+
+.overflow-X-Auto{
+  overflow-x: auto
+}
+
+.bold{
+  font-weight: bold!important;
+}
+
+.padding-20{
+  padding: 20px;
+}
+
+.text-align-center{
+  text-align: center;
+}
