@@ -6,9 +6,30 @@ export class Tool {
 
     this.toolId = toolId
     this.toolTitle = toolTitle
+
+    let weightSum = 0
+    let weightNormalizedSum = 0
+
+    currentTypeOfTool.criterions.map((item) => {
+      weightSum += Math.abs(Number(item.criterionWeight))
+    })
+
+    currentTypeOfTool.certificates.map((item) => {
+      weightSum += Math.abs(Number(item.certificateWeight))
+    })
+
+
+    currentTypeOfTool.criterions.map((item) => {
+        item.normalizedWeight = Number(item.criterionWeight) / weightSum
+    })
+    currentTypeOfTool.certificates.map((item) => {
+      item.normalizedWeight = Number(item.certificateWeight) / weightSum
+    })
+
     this.toolCriterions = this.fillCriterions(criterions, currentTypeOfTool, allCriterions)
     this.toolCertificates = this.fillCertificates(certificates, currentTypeOfTool, allCertificates)
     this.qualityLevel = this.getQualityLevel(this.toolCertificates, this.toolCriterions)
+
   }
 
   fillCriterions(criterions, currentTypeOfTool, allCriterions) {
@@ -36,10 +57,9 @@ export class Tool {
       const indexOfItem = this.getIndexOfItem(allCriterioneTypes, 'criterion', currentId)
       const currentMaxValue = Number(currentTypeOfTool.criterions[indexOfItem].maxValue)
       const currentMinValue = Number(currentTypeOfTool.criterions[indexOfItem].minValue)
-      const currentWeight = Number(currentTypeOfTool.criterions[indexOfItem].criterionWeight)
+      const currentCommonWeight = Number(currentTypeOfTool.criterions[indexOfItem].normalizedWeight)
+      const currentWeight = Number(currentTypeOfTool.criterions[indexOfItem].normalizedWeight)
       
-        
-     
 
       if (currentMaxValue == currentMinValue && Number(currentMaxValue) !== 0) {
         if (currentWeight >= 0) {
@@ -65,11 +85,6 @@ export class Tool {
               verificatedValue = 1
           } else {
             if (itemValue >= currentMaxValue) {
-              // if (criterion.itemTitle == 'Системные требования') {
-              //   console.log(criterion.itemTitle)
-              //   console.log(itemValue)
-              //   console.log(currentMaxValue)
-              // }
               if (currentWeight >= 0)
                 verificatedValue = 1
               else
@@ -84,7 +99,7 @@ export class Tool {
           }
         }
       }
-      filteredCriterions.push(new Criterion(criterion.itemTitle, itemValue, verificatedValue, currentWeight, criterion.typeOfItemId, criterion.itselfKey))
+      filteredCriterions.push(new Criterion(criterion.itemTitle, itemValue, verificatedValue, currentWeight, currentCommonWeight, criterion.typeOfItemId, criterion.itselfKey))
 
     })
     return filteredCriterions
@@ -114,7 +129,8 @@ export class Tool {
       const indexOfItem = this.getIndexOfItem(allCertificateTypes, 'certificate', currentId)
       const currentMaxValue = currentTypeOfTool.certificates[indexOfItem].maxValue
       const currentMinValue = currentTypeOfTool.certificates[indexOfItem].minValue
-      const currentWeight = currentTypeOfTool.certificates[indexOfItem].certificateWeight
+      const currentCommonWeight = currentTypeOfTool.certificates[indexOfItem].cerificateWeight
+      const currentWeight = currentTypeOfTool.certificates[indexOfItem].normalizedWeight
 
       if (currentMaxValue == currentMinValue && Number(currentMaxValue) !== 0) {
         if (currentWeight >= 0) {
@@ -154,7 +170,7 @@ export class Tool {
           }
         }
       }
-      filteredCertificates.push(new Certificate(certificate.itemTitle, itemValue, verificatedValue, currentWeight, certificate.typeOfItemId, certificate.itselfKey))
+      filteredCertificates.push(new Certificate(certificate.itemTitle, itemValue, verificatedValue, currentWeight, currentCommonWeight, certificate.typeOfItemId, certificate.itselfKey))
 
     })
     return filteredCertificates

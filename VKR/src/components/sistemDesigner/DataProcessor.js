@@ -89,6 +89,10 @@ class DataProcessor extends Component {
 
               </div>
             </div>
+            <div className='card z-deph-0'>
+              <h5 className='padding-20'>Сравнительная оценка свойств средств защиты информации типа {typeOfTool.title} по выбранной системе критериев оценки качества позволяет рекомендовать к использованию в составе СКЗИ следующее СЗИ:
+              <div className={"bold text-align-center"}>{processedTools[0].toolTitle}</div></h5>
+            </div>
 
             
           </div>

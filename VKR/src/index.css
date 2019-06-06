@@ -93,3 +93,8 @@ code {
 .text-align-center{
   text-align: center;
 }
+
+.disabled-link {
+  pointer-events: none !important;
+  color: dimgray !important;
+}

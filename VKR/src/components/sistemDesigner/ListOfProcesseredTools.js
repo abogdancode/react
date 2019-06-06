@@ -17,8 +17,8 @@ export const ListOfProcesseredTools = ({ processedTools})=>{
           return (
             <tr key={'LOPT' + tool.toolId}>
               <td>{tool.toolTitle}</td>
-              <td>{tool.round(tool.qualityLevel,2)}</td>
-              <td>{tool.round(tool.advantage,2)}</td>
+              <td>{tool.round(tool.qualityLevel,3)}</td>
+              <td>{tool.round(tool.advantage,3)}</td>
             </tr>
             )
           

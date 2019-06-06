@@ -29,9 +29,16 @@ const ProjectDetails = (props) => {
     }  
   }
 
+  
+
+
   const { project, auth } = props;
   if (!auth.uid) return <Redirect to='/signin' />
   if (project) {
+    let disabledOrEnabledLink = 'disabled-link'
+    if (props.tools.length>=2) {
+      disabledOrEnabledLink = ''
+    }
     return (
       <div className='container section project-ditails'>
         <div className='card z-deph-0'>
@@ -44,7 +51,7 @@ const ProjectDetails = (props) => {
             <div>{moment(project.createdAt.toDate()).calendar()}</div>
             <Link to={'/toolTypeDashboard/' + props.match.params.systemId} onClick={handleClick}>Удалить тип СЗИ</Link>
             <Link to={'/updateType/' + props.match.params.systemId +'/'+ props.match.params.id +''} >Изменить тип СЗИ</Link>
-            <Link to={'/report/' + props.match.params.systemId + '/' + props.match.params.id + ''} >Отчет по ранжированию СЗИ</Link>
+            <Link className={disabledOrEnabledLink} to={'/report/' + props.match.params.systemId + '/' + props.match.params.id + ''} >Отчет по ранжированию СЗИ</Link>
             <Link to={'/copyType/' + props.match.params.systemId + '/' + props.match.params.id + ''} >Скопировать тип СЗИ в данной АСЗИ</Link>
           </div>
           <div className='card-content'>
